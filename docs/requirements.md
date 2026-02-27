@@ -1,142 +1,225 @@
 # Requisitos del Sistema
 
 **Proyecto:** Inventario-js
-**Cliente simulado:** Rietman y Cía. - Estación de Servicio YPF
+**Cliente:** Rietman y Cía. – Estación de Servicio YPF
 
 ## 1. Introducción
-El presenta documento describe los requerimientos funcionales y no funcionales del sistema **Inventario-js**, una aplicación de consola orientada a la gestión de inventario por sector dentro de una estación de servicio.
-El sistema tiene como objetivo permitir el control de stock, registro de moviemientos y generación de reportes básicos, utilizando estrcutras de datos en memoria y lógica modular.
 
-## 2. Alcance
-El sistema:
-* Administrará inventario de tres sectore:
-    * Playa de Líquidos.
-    * Playa de GNC.
-    * Tienda Full.
-* Permitirá registrar productos por sector.
-* Permitirá registrar entradas y salidas de stock.
-* Permitirá consultas y reportes.
-* Funcionará únicamente en consola.
-* Utilizara estructuras de datos estáticas en memoria.
+Este documento define los requisitos del sistema **Inventario-js**, una aplicación de consola destinada a gestionar el inventario operativo de una estación de servicio.
 
-El sistema **no incluye en esta versión:**
-* Persistencia de base de datos.
+El propósito de este documento es establecer claramente **qué debe hacer el sistema**, separando los requisitos funcionales de las decisiones de implementación.
+
+## 2. Objetivo
+
+Desarrollar un sistema de inventario por consola que permita:
+
+* Administrar productos por sector.
+* Registrar movimientos de entrada y salida.
+* Consultar stock actual.
+* Detectar productos con stock bajo.
+* Generar un reporte de turno con métricas operativas.
+
+## 3. Alcance
+
+El sistema deberá:
+
+* Administrar inventario en tres sectores:
+
+  * Playa de Líquidos
+  * Playa de GNC
+  * Tienda Full
+* Permitir seleccionar un sector activo.
+* Registrar productos por sector.
+* Registrar movimientos de entrada y salida.
+* Consultar inventario por sector.
+* Realizar búsqueda global de productos.
+* Generar reporte de turno.
+* Operar exclusivamente en consola.
+* Almacenar datos únicamente en memoria.
+
+## 4. Fuera de Alcance
+
+En esta versión el sistema no incluye:
+
+* Persistencia en base de datos.
 * Interfaz gráfica.
-* Manejo de usuario o autenticacion.
-* Acceso multiusuario.
+* Sistema multiusuario.
+* Autenticación de usuarios.
+* Integraciones externas.
+* Exportación de reportes.
 
-## 3. Definiciones
-**Sector:** Área operativa de la estación donde se administra stock.
-**Producto:** Ítem almacenado con nombre, stock actual y stock mínimo.
-**Movimiento:** Registro de entrada o salida de stock.
-**sectorActual:** Variable que indica el sector sobre el cual se están realizando operaciones.
+## 5. Glosario
 
-## 4. Requerimientos Funcionales
+**Sector:** Área operativa donde se administra stock.
+**Producto:** Ítem con nombre, stock actual y stock mínimo.
+**Movimiento:** Registro de entrada o salida de unidades de un producto.
+**Sector actual:** Sector seleccionado sobre el cual se realizan operaciones.
+**Stock mínimo:** Umbral a partir del cual un producto se considera en alerta.
+
+## 6. Requisitos Funcionales (RF)
 
 ### RF1 – Selección de Sector
-El sistema deberá permitir seleccionar uno de los siguientes sectores:
-1. Playa de Líquidos
-2. Playa de GNC
-3. Tienda Full
-El sistema deberá almacenar el sector seleccionado en sectorActual.
-No se permitirá realizar operaciones dependientes de sector si sectorActual no está definido.
 
-### RF2 - Alta de Producto
-El sistema deberá permitir dar de alta un producto en el sector actual.
-Datos requeridos:
-* Nombre del producto
-* Stock inicial
-* Stock mínimo
-* Precio unitario
+**Descripción:**
+El sistema debe permitir seleccionar uno de los tres sectores operativos.
 
-Reglas:
-* El nombre no puede estar vacío
-* El stock inicial no puede ser negativo.
-* El stock mínimo no puede ser negativo.
-* No se permitirá duplicar un producto dentro del mismo sector.
+**Reglas / Validaciones:**
+
+* Solo se aceptan valores 1, 2 o 3.
+* No se puede operar en funciones dependientes de sector sin haber seleccionado uno.
+
+**Criterios de aceptación:**
+
+* Entrada válida → Se muestra confirmación del sector seleccionado.
+* Entrada inválida → Se muestra “Opción inválida” y se solicita nuevamente.
+* No debe finalizar el programa ante error.
+
+### RF2 – Alta de Producto
+
+**Descripción:**
+Permitir registrar un producto en el sector actual.
+
+**Reglas / Validaciones:**
+
+* Nombre obligatorio y no vacío.
+* Stock inicial ≥ 0.
+* Stock mínimo ≥ 0.
+* No permitir duplicados dentro del mismo sector.
+
+**Criterios de aceptación:**
+
+* Alta exitosa → Mensaje de confirmación en consola.
+* Producto duplicado → Mensaje “Producto ya existente”.
+* Datos inválidos → Mensaje específico y reingreso.
+* No debe producir error de ejecución.
 
 ### RF3 – Movimiento de Entrada
-El sistema deberá permitir registrar una entrada de stock.
-Reglas:
+
+**Descripción:**
+Permitir aumentar el stock de un producto existente.
+
+**Reglas / Validaciones:**
+
 * El producto debe existir en el sector actual.
-* La cantidad ingresada debe ser un número entero positivo.
-* El stock se incrementará en la cantidad indicada.
-* Se registrará el movimiento en el historial.
+* La cantidad debe ser un entero positivo.
+
+**Criterios de aceptación:**
+
+* Movimiento válido → Stock actualizado y mensaje de confirmación.
+* Producto inexistente → Mensaje claro de error.
+* Cantidad inválida → Reingreso sin finalizar el sistema.
+* El movimiento debe registrarse en el historial.
 
 ### RF4 – Movimiento de Salida
-El sistema deberá permitir registrar una salida de stock.
-Reglas:
-* El producto debe existir en el sector actual.
-* La cantidad debe ser un número entero positivo.
-* No se permitirá que el stock resulte negativo.
-* Se registrará el movimiento en el historial.
+
+**Descripción:**
+Permitir disminuir el stock de un producto existente.
+
+**Reglas / Validaciones:**
+
+* El producto debe existir.
+* La cantidad debe ser entero positivo.
+* No permitir que el stock resulte negativo.
+
+**Criterios de aceptación:**
+
+* Movimiento válido → Stock actualizado y confirmación en consola.
+* Stock insuficiente → Mensaje de error.
+* Cantidad inválida → Reingreso sin finalizar el sistema.
+* El movimiento debe registrarse en el historial.
 
 ### RF5 – Consulta de Inventario por Sector
-El sistema deberá listar todos los productos del sector actual mostrando:
-* Nombre
-* Stock actual
-* Stock mínimo
-* Indicador de alerta (si stock actual < stock mínimo)
+
+**Descripción:**
+Listar los productos del sector actual.
+
+**Criterios de aceptación:**
+
+* Debe mostrarse:
+
+  * Nombre
+  * Stock actual
+  * Stock mínimo
+  * Indicador de alerta si stockActual < stockMinimo
+* Si no hay productos → Mostrar mensaje “No hay productos registrados”.
 
 ### RF6 – Búsqueda Global de Producto
-El sistema deberá permitir buscar un producto por nombre y mostrar:
-* En qué sector(es) existe
-* Stock actual por sector
-La búsqueda deberá realizarse en los tres sectores.
+
+**Descripción:**
+Permitir buscar un producto en los tres sectores.
+
+**Reglas / Validaciones:**
+
+* Nombre obligatorio.
+
+**Criterios de aceptación:**
+
+* Si existe → Mostrar sectores donde se encuentra y stock en cada uno.
+* Si no existe → Mostrar mensaje “Producto no encontrado”.
+* No debe finalizar el sistema ante error.
 
 ### RF7 – Reporte de Turno
-El sistema deberá generar un resumen que incluya:
-* Cantidad total de movimientos registrados
-* Total de entradas
-* Total de salidas
-* Productos con stock bajo por sector
 
-## 5. Requerimientos No Funcionales
+**Descripción:**
+Generar un resumen operativo del turno actual.
 
-### RNF1 – Plataforma
-El sistema deberá ejecutarse en Node.js mediante consola.
+**El reporte deberá incluir:**
 
-### RNF2 – Arquitectura
-El sistema deberá estar dividido en módulos:
+* Cantidad total de movimientos registrados.
+* Total de movimientos de entrada.
+* Total de movimientos de salida.
+* Total de unidades ingresadas.
+* Total de unidades retiradas.
+* Productos en alerta (stock bajo).
+* Valor estimado del inventario (si precio está activo).
+
+**Definiciones explícitas:**
+
+* “Movimientos” = cantidad de registros.
+* “Unidades” = suma total de cantidades.
+
+**Criterios de aceptación:**
+
+* El reporte debe imprimirse completo en consola.
+* Si no existen movimientos → Mostrar valores en cero.
+* No debe producir errores si no hay productos cargados.
+
+## 7. Requisitos No Funcionales (RNF)
+
+**RNF1 – Plataforma:**
+El sistema debe ejecutarse en Node.js LTS (versión objetivo a definir, por ejemplo 18.x o superior).
+
+**RNF2 – Arquitectura:**
+El sistema debe estar dividido en módulos:
+
 * UI
 * Lógica de inventario
 * Validaciones
 * Reportes
 
-RNF3 – Persistencia
-En esta versión los datos existirán únicamente en memoria.
+**RNF3 – Persistencia:**
+Los datos deben almacenarse únicamente en memoria durante la ejecución.
 
-RNF4 – Validación
-El sistema deberá validar todas las entradas del usuario antes de ejecutar operaciones.
+**RNF4 – Validación:**
+Toda entrada inválida debe volver a solicitarse sin finalizar el programa ni provocar crash.
 
-RNF5 – Determinismo
-Dado el mismo conjunto de entradas, el sistema deberá producir los mismos resultados.
+**RNF5 – Determinismo:**
+El sistema no debe utilizar aleatoriedad.
+Dados los mismos inputs, debe producir la misma salida.
 
-## 6. Modelo de Datos Inicial (Nivel SAO)
-Por cada sector:
-* names[]
-* stock[]
-* minStock[]
-* price[] 
-* tope
+## 8. Supuestos
 
-Historial de movimientos:
-* movSector[]
-* movProducto[]
-* movTipo[]
-* movCantidad[]
-* movTope
-
-## 7. Supuestos
 * Los productos pueden existir en más de un sector.
 * El stock es independiente por sector.
-* No se contempla concurrencia.
-* No se contempla control por usuario.
+* El sistema es de uso individual.
+* No existe concurrencia.
+* No hay límite de tiempo de ejecución.
 
-## 8. Futuras Extensiones (Fuera de Alcance Actual)
+## 9. Extensiones Futuras
+
 * Persistencia en base de datos.
 * Interfaz web.
-* Autenticación de usuarios.
-* Exportación de reportes.
 * Sistema multiusuario.
-* Control por turno real.
+* Autenticación.
+* Exportación de reportes.
+* Integración con sistemas externos.
